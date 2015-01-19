@@ -1,0 +1,99 @@
+<?php
+class html_textarea extends html_attributes
+{
+	function __construct($name)
+	{
+		$this->textarea = new html_element('textarea', '');
+		$this->textarea->addattribute('name', $name);
+	}
+	
+	public function ishtml($ishtml, $theme = 'advanced', $skinvariant = 'silver', $isresize = TRUE)
+	{
+		if ($ishtml)
+		{
+			if ($isresize){ $resize = 'TRUE'; } else { $resize = FALSE; }
+			$this->tinymceprep('htmledit', $theme, $skinvariant, $resize);
+			$this->textarea->addclass('htmledit');
+		} else {
+			unset($this->tinymcejs);
+			$this->textarea->removeclass('htmledit');
+		}
+	}
+	
+	protected function tinymceprep($name, $theme = 'advanced', $skinvariant = 'silver', $resize = 'true', $skin = 'o2k7', $fullscreen = FALSE)
+	{
+		global $publicdir, $siteRemoteRoot;
+		$this->tinymcejs = '<script type="text/javascript" src="'.$siteRemoteRoot.'/js/tiny_mce/tiny_mce.js"></script>';
+		if($fullscreen)
+		{
+		$fullscreenCode = "
+			oninit : function() {
+				tinyMCE.get('description').execCommand('mceFullScreen');
+			}
+		";
+		} else {
+			$fullscreenCode = '';
+		}
+		if ($theme == 'advanced')
+		{
+			$javascript = '
+		<script type="text/javascript">
+		tinyMCE.init({
+        // General options
+        mode : "specific_textareas",
+        editor_selector : "'.$name.'",
+        theme : "advanced",
+        skin : "'.$skin.'",
+        skin_variant : "'.$skinvariant.'",
+        plugins : "safari,spellchecker,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template",
+
+        // Theme options
+        theme_advanced_buttons1 : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect",
+        theme_advanced_buttons2 : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
+        theme_advanced_buttons3 : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
+        theme_advanced_buttons4 : "insertlayer,moveforward,movebackward,absolute,|,styleprops,spellchecker,|,cite,abbr,acronym,del,ins,attribs,|,visualchars,nonbreaking,template,blockquote,pagebreak",
+        theme_advanced_toolbar_location : "top",
+        theme_advanced_toolbar_align : "left",
+        theme_advanced_statusbar_location : "bottom",
+        theme_advanced_resizing : "'.$resize.'",
+        '.$fullscreenCode.'
+		});
+		</script>';
+		}
+		
+		if (!isset($javascript))
+		{
+			$javascript = '
+				<script type="text/javascript">
+					tinyMCE.init({
+						mode : "specific_textareas",
+        				editor_selector : "'.$name.'",
+    				    theme : "simple",
+    				    skin : "'.$skin.'",
+        				skin_variant : "'.$skinvariant.'",
+        				'.$fullscreenCode.'
+					});
+				</script>';
+		}
+		$this->javascript = $javascript;
+	}
+	
+	public function setvalue($value)
+	{
+		$this->textarea->setcontent($value);
+	}
+	
+	public function __tostring()
+	{
+		$this->textarea->removeattribute('value');
+		$textarea = $this->textarea->__tostring();
+		if (isset($this->tinymcejs))
+		{
+			$javascript = $this->tinymcejs.$this->javascript;
+		} else {
+			$javascript = '';
+		}
+		return $javascript.PHP_EOL.$textarea;
+	}
+}
+?>

@@ -1,0 +1,56 @@
+ .fileContainer {
+ 	display:block;
+    float:left;
+    position:relative;
+    cursor:pointer;
+    height:129px;
+}
+
+ .fileContainer:hover .fileBackground {
+    background-color:#eee;
+}
+
+ .fileContainer .fileBackground {
+    position:absolute;
+    height:100%;
+    width:100%;
+    z-index:1;
+    opacity:0.5;
+    background-color:transparent;
+    border-radius:7px;
+    -webkit-transition: background 0.1s ease;
+    -moz-transition: background 0.1s ease;
+    -o-transition: background 0.1s ease;
+    -ms-transition: background 0.1s ease;
+    transition: background 0.1s ease;
+}
+
+ .fileContainer .fileIcon {
+    width: 100px;
+    height:80px;
+    margin: 5px;
+    background-color:transparent;
+    position:relative;
+    z-index:2;
+    text-align:center;
+}
+
+.fileContainer .fileIcon img {
+	max-width:80px;
+	max-height:80px;
+}
+
+ .fileContainer .fileTitle {
+    background-color:#eee;
+    width:94px;
+    padding: 2px 3px;
+    min-height:18px;
+    max-height:30px;
+    margin:5px;
+    position:relative;
+    z-index:2;
+    font-size:13px;
+    overflow:hidden;
+    text-align:center;
+	border-radius: 3px;
+}

@@ -1,0 +1,511 @@
+body {
+    margin:0;
+    padding:0;
+    font-size:14px;
+}
+
+/* preping window styleing start */
+
+#prepWindowContainer #prepBackgroundContainer {
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    overflow:hidden;
+    z-index:9995;
+    background-color:#fff;
+}
+
+#prepWindowContainer #prepBackgroundContainer img {
+    position:absolute;
+    top:0;
+    left:0;
+    min-height: 741px;
+    min-width: 1500px;
+    width: 100% !important;
+    height: auto !important;
+}
+
+#prepWindowContainer #DesktopInitText {
+   position:relative;
+   left:-50%;
+   width:270px;
+   color: #fff;
+   font-family:Arial;
+   font-weight:bold;
+   font-size:20px;
+   background-image:url('../images/ajax-loader1.gif');
+   background-repeat:no-repeat;
+   background-position:center right;
+}
+
+#prepWindowContainer #InitTextContainer {
+    position:relative;
+    top:100px;
+    left:50%;
+    width:270px;
+}
+    
+#prepWindowContainer #PreparingWindow {
+    width:400px;
+    height:300px;
+    position:relative;
+    z-index:9996;
+    background-image:url('../images/loginWindow.png');
+    background-repeat:no-repeat;
+    background-position: top center;
+    margin:30px auto 0 auto;
+}
+
+#prepWindowContainer #usernameAjaxText {
+    position:absolute;
+    top:25px;
+    left:25px;
+    color:#fff;
+    font-size:18px;
+    font-family:Arial;
+    font-weight:bold;
+}
+
+/* preping window styleing end */
+
+
+#launcher {
+    position:absolute;
+    top:20px;
+    bottom:0;
+    left:0;
+    width:265px;
+    overflow:hidden;
+}
+
+#launcherIcons {
+     position:absolute;
+    top:2px;
+    bottom:5px;
+    left:0;
+    width:290px;
+    overflow:auto;
+}
+
+#launcherColor {
+	width:60px;
+    position:absolute;
+    top:0;
+    left:0;
+    bottom:0;
+    background-color:#556;
+    z-index:0;
+    opacity: 0.8;
+    border-radius: 0 0 8px 0;
+}
+
+#menuBar {
+    position:absolute;
+    z-index:10;
+    top:0;
+    left:0;
+    right:0;
+    height:20px;
+    background-color:#556;
+    border-radius: 0 0 8px 0;
+    opacity:0.8;
+}
+
+#menuBar * {
+    float:left;
+}
+
+#menuBar #logoutButton {
+    display:block;
+    float:right;
+    margin: 1px 5px 0 0;
+    width:17px;
+    height:17px;
+    background-image:url('../images/logoutIcon.png');
+    background-repeat:none;
+}
+#menuBar:hover #logoutButton {
+    background-position: 0 17px;
+}
+
+#windowRestriction {
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    z-index:3;
+}
+
+#desktopContainer {
+    position:absolute;
+    top:20px;
+    bottom:0;
+    right:0;
+    left:60px;
+}
+
+.windowContainer {
+    position:absolute;
+    background-color:#bbb;
+    width:500px;
+    height:300px;
+    padding:4px 7px;
+    border-radius:8px;
+}
+
+.allowEffects .windowContainer {
+    box-shadow: 2px 2px 10px #333;    
+}
+
+.windowContainer .windowCover {
+    z-index:5;
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background-color:#fff;
+    opacity:0.2;
+    border-radius: 8px;
+}
+
+.windowContainer .windowCover.trans {
+    background-color:transparent !important;
+}
+
+.windowContainer .windowCoverGrey {
+    z-index:5;
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background-color:#000;
+    opacity:0.5;
+    border-radius: 8px;
+    background-image:url('../images/ajax-loader2.gif');
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.windowContainer .windowHandle {
+    z-index:1;
+    border:1px solid #fff;
+    height:20px;
+    overflow:hidden;
+    border-radius: 5px;
+    position:relative;
+}
+
+.windowContainer.fullscreen .windowHandle {
+	margin-right:13px;
+}
+
+
+.windowContainer .windowCover .windowHandle {
+    border:none;
+    border-radius: none;
+}
+
+.windowContainer.fullscreen .windowContent {
+	right:20px;
+}
+
+.windowContent {
+    position:absolute;
+    top:30px;
+    bottom:5px;
+    left:5px;
+    right:5px;
+}
+
+.ipad .windowContent {
+	overflow:scroll;
+	-webkit-overflow-scrolling:touch; 
+}
+
+.mobileView .windowContent {
+	overflow:scroll;
+	-webkit-overflow-scrolling:touch; 
+}
+
+.windowFrame {
+    background-color:#bbb;
+    border:none;
+    width:100%;
+    height:100%;
+}
+
+.launcherIcon{
+    width:50px;
+    height:50px;
+    margin:5px;
+    background-color:yellow;
+    border-radius: 5px;
+    position:relative;
+}
+
+.launcherIcon:hover .launcherText {
+    display:block;
+}
+
+.launcherIcon .launcherText {
+    display:none;
+    position:absolute;
+    padding-left:10px;
+    top:15px;
+    right:-210px;
+    width:200px;
+    height:20px;
+    background-image:url('../images/launcherArrow.png');
+    background-repeat: no-repeat;
+    background-position: 3px 0;
+}
+
+.launcherIcon .launcherText .launcherTextStyle {
+    float:left;
+    color:#fff;
+    font-size:14px;
+    font-weight:bold;
+    font-family:Arial;
+    padding-top:2px;
+    padding-left:5px;
+    padding-right:10px;
+    margin-left:3px;
+    height:18px;
+    overflow:hidden;
+    border-radius: 0 4px 4px 0;
+    background-image: url('../images/launcherText.png');
+}
+
+.launcherIcon .launcherIconImage {
+    padding:5px;
+    width:40px;
+}
+
+#backgroundContainer {
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    overflow:hidden;
+    z-index:0;
+}
+
+#backgroundContainer img {
+    position:absolute;
+    top:0;
+    left:0;
+    min-height: 741px;
+    min-width: 1500px;
+    width: 100% !important;
+    height: auto !important;
+}
+
+#clockText {
+    height:15px;
+    margin-top:2px;
+    margin-right:5px;
+    background-color:#fff;
+    font-size:12px;
+    font-family:Arial;
+    font-weight:bold;
+    padding: 0 5px;
+    border-radius:5px;
+    float:right;
+}
+
+
+.windowContainer .windowHandle .windowTitle {
+    font-size:13px;
+    font-family:Arial;
+    font-weight:bold;
+    padding: 2px 0 0 3px;
+    position:absolute;
+    left:0;
+    bottom:0;
+    top:0;
+    right:60px;
+    overflow:hidden;
+}
+
+.windowTitleFade {
+    position:absolute;
+    left:-15px;
+    top:0;
+}
+
+.windowContainer .windowHandle .windowButtons {
+    position:absolute;
+    right:0;
+    width:60px;
+    height:25px;
+}
+
+.mobileView .windowContainer .windowHandle .windowButtons {
+    width:45px;
+}
+
+.windowContainer .windowHandle .windowButtons div {
+    width:10px;
+    height:10px;
+    border-radius: 5px;
+    margin-top:4px;
+    margin-right:0px;
+    margin-left:7px;
+    float:left;
+    background-color:#aaa;
+    box-shadow: 0 0 10px #aaa;
+    cursor:pointer;
+}
+
+.btnHide:hover {
+    background-color:#ffa !important;
+    box-shadow: 0 0 10px #ffa !important;
+}
+
+.btnFS:hover {
+    background-color:#afa !important;
+    box-shadow: 0 0 10px #afa !important;
+}
+
+.btnClose:hover {
+    background-color:#faa !important;
+    box-shadow: 0 0 10px #faa !important;
+}
+
+
+#netTraffic {
+    width:17px;
+    height:20px;
+    float:right;
+    margin-right:5px;
+    background-image:url('../images/netTrafficSprite.png');
+    background-position: 0 -20px;
+}
+
+#netTraffic.blue {
+    background-position: 0 0px;
+}
+
+#netTraffic.red {
+    background-position: 0 20px;
+}
+
+
+#windowRestriction .fileContainer {
+    float:left;
+    position:absolute !important;
+    opacity: 0.9;
+}
+
+#windowRestriction .fileContainer:hover .fileBackground {
+    background-color:#eee;
+}
+#windowRestriction .fileContainer:hover {
+    z-index: 19999;
+    opacity: 1;
+}
+
+#windowRestriction .fileContainer .fileBackground {
+    position:absolute;
+    height:100%;
+    width:100%;
+    z-index:1;
+    opacity:0.8;
+    background-color:transparent;
+    border-radius:7px;
+    -webkit-transition: background 0.3s ease;
+    -moz-transition: background 0.3s ease;
+    -o-transition: background 0.3s ease;
+    -ms-transition: background 0.3s ease;
+    transition: background 0.3s ease;
+}
+
+#windowRestriction .fileContainer .fileIcon {
+    width: 80px;
+    height:80px;
+    margin: 5px;
+    background-color:#fff;
+    position:relative;
+    z-index:2;
+}
+
+#windowRestriction .fileContainer .fileTitle {
+    background-color:#fff;
+    width:80px;
+    min-height:20px;
+    margin:5px;
+    position:relative;
+    z-index:2;
+}
+
+#messageContainer, #messageTrigger {
+	display:none;
+}
+
+#messageContainer {
+	font-size:15px;
+	font-family:Arial;
+	line-height:18px;
+    font-weight:bold;
+    text-align:center;
+    padding-top:15px;
+    padding-bottom:5px;
+}
+
+/* screensaver */
+#scrensaverCanvas {
+	display:none;
+	background-color:#000;
+}
+
+#screensaverContainer {
+	display:none;
+	overflow:hidden;
+	position:absolute;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+	width:100%;
+	height:100%;
+	background-color:#000;
+}
+
+#screensaverClock {
+	position:absolute;
+	right:70px;
+	top:50px;
+	width:280px;
+	padding: 20px 0;
+	font-size:60px;
+	text-align:center;
+	color:#fff;
+	background-color:rgba(0,0,0,0.6);
+	border-radius: 20px;
+}
+
+::-webkit-scrollbar {
+    width: 11px;
+}
+ 
+::-webkit-scrollbar-track {
+    background-color:#bbb;
+}
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    -webkit-box-shadow: inset 0 0 7px #888; 
+    cursor:pointer;
+    background-color:#bbb;
+}

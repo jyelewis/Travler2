@@ -1,0 +1,115 @@
+<?php
+require('../../SysData/init.php');
+
+$noteDb = new db_sqlite('notes.db');
+
+if (isset($_GET['createNote']))
+{
+	$noteDb->writeQuery("INSERT INTO Notes (`title`) VALUES ('New Note :1')", date("g:i"));
+	header('location: ?');
+}
+
+$allNotes = $noteDb->query("SELECT noteID,title FROM Notes");
+
+if (isset($_GET['noteID']))
+{
+	$currNote = $noteDb->query("SELECT * FROM Notes WHERE noteID=':1'", $_GET['noteID']);
+} else {
+	$currNote = $noteDb->query("SELECT noteID FROM Notes ORDER BY title LIMIT 1");
+	header('location: ?noteID='.$currNote[0]['noteID']);
+	exit();
+}
+
+$editPoint = 00;
+if (isset($_GET['editPoint']))
+{
+	$result = $noteDb -> query("SELECT content FROM Points WHERE pointID = ':1'", $_GET['editPoint']);
+	$content = $result[0]['content'];
+	$content = str_replace('<br />', '', $content);
+	$editPointForm  = new html_form('editPointForm');
+	$editPointForm -> addinput('point', 'textarea', $content);
+	$editPointForm -> addinputattribute('point', 'id', 'newPointInput');
+	
+	$editPointForm -> addinput('submit', 'submit', 'Edit point');
+	$editPointForm -> addinputattribute('submit', 'id', 'submit');
+	$editPoint = $_GET['editPoint'];
+	if ($editPointForm->ispostback)
+	{
+		$point = $editPointForm->postback->getvalue('point');
+		if ($point != '')
+		{
+			if ($point == '-delete-')
+			{
+				$noteDb->writeQuery("DELETE FROM Points WHERE PointID=':1'", $_GET['editPoint']);
+			} else {
+				$point = strip_tags($point);
+				$point = htmlentities($point);
+				$point = nl2br($point);
+				$noteDb->writeQuery("UPDATE Points SET content=':1' WHERE pointID=':2'", $point, $_GET['editPoint']);
+			}
+		}
+		header('location: ?noteID='.$_GET['noteID']);
+	}
+}
+
+$currNote = $currNote[0];
+
+$currPoints = $noteDb->query("SELECT * FROM Points WHERE noteID = ':1' ORDER BY time", $currNote['noteID']);
+$i = 1;
+$pointLI = array();
+foreach($currPoints as $point)
+{
+	$currClass = 'stripe1';
+	if($i%2==0){ $currClass = 'stripe2'; }
+	$from = '';
+	if ($point['from'] != ''){ $from = '<span class="from">'.$point['from'].'</span>'; }
+	$pointLI[] = array('content' => $point['content'].$from, 'class' => $currClass, 'pointID' => $point['pointID']);
+	$i++;	
+}
+
+$titleForm  = new html_form('titleForm');
+$titleForm -> addinput('title', 'text', $currNote['title']);
+$titleForm -> addinputattribute('title', 'id', 'noteTitle');
+$titleForm -> addinput('submit', 'submit', 'Change title');
+
+$pointForm  = new html_form('pointForm');
+
+$pointForm -> addinput('point', 'textarea', '');
+$pointForm -> addinputattribute('point', 'id', 'newPointInput');
+
+$pointForm -> addinput('submit', 'submit', 'Add point');
+$pointForm -> addinputattribute('submit', 'id', 'submit');
+
+if ($pointForm -> ispostback)
+{
+	$point = $pointForm->postback->getvalue('point');
+	if ($point != '')
+	{
+		$point = strip_tags($point);
+		$point = htmlentities($point);
+		$point = nl2br($point);
+		$from = '';
+		if($userTied->isAuth){ $from = $userTied->data['fullname']; }
+		$noteDb->writeQuery("INSERT INTO Points (`noteID`, `content`, `time`, `from`) VALUES (':1', ':2', ':3', ':4')",
+			$_GET['noteID'], $point, time(), $from);
+		header('location: ?noteID='.$_GET['noteID']);
+		exit();
+	}
+}
+
+if ($titleForm -> ispostback)
+{
+	if ($titleForm->postback->getvalue('title') == '-delete-')
+	{
+		$noteDb->writeQuery("DELETE FROM Notes WHERE noteID=':1'", $_GET['noteID']);
+		header('location: ?');
+	} else {
+		$noteDb->writeQuery("UPDATE Notes SET title=':1' WHERE noteID=':2'", $titleForm->postback->getvalue('title'), $_GET['noteID']);
+		header('location: ?noteID='.$_GET['noteID']);
+	}
+	exit();
+}
+
+$titleForm = $titleForm->__tostring();
+$pointForm = $pointForm->__tostring();
+?>

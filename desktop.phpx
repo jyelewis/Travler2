@@ -1,0 +1,80 @@
+<?php
+require('SysData/init.php');
+if (isset($_GET['noEffects'])){
+    $bodyClass = 'noEffects';
+} else {
+    $bodyClass = 'allowEffects';
+}
+//start background stuff 
+$backgrounds = $db->query("
+SELECT
+	backgroundImageID
+FROM
+	BackgroundImages
+WHERE
+	userID=':1'
+ORDER BY
+	isDefault DESC
+", $userTied->userID);
+
+$defaultBG = '<img width="100%" src="images/background.gif" alt="" />';
+
+if (isset($backgrounds[0]))
+{
+	$defaultBG = '<img width="100%" src="ajax/backgroundImage.php?backgroundImageID='.$backgrounds[0]['backgroundImageID'].'" alt="" />';
+}
+unset($backgrounds[0]);
+
+shuffle($backgrounds);
+
+foreach($backgrounds as &$background)
+{
+    $background = '<img width="100%" src="ajax/backgroundImage.php?backgroundImageID='.$background['backgroundImageID'].'" alt="" />';
+}
+array_unshift($backgrounds, $defaultBG);
+$backgrounds = implode('', $backgrounds);
+//end backgrounds
+
+//start windows that were currently open
+$allWindows = $db->query("SELECT windowID, applicationID, title, URL FROM Windows WHERE userID=':1'", $userTied->userID);
+$windows = array();
+foreach($allWindows as $currWindow)
+{
+    $window['dataApp'] = generateWindowCode($currWindow['applicationID']);
+    $window['dataWindow'] = generateWindowCode($currWindow['windowID']);
+    $window['title'] = $currWindow['title'];
+    $window['url'] = $currWindow['URL'];
+    $windows[] = $window;
+}
+unset($window);
+unset($allWindows);
+unset($currWindow);
+//end windows
+
+//start desktop files
+updateDesktopIcons();
+$desktopFiles = $db->query("SELECT * FROM DesktopIcons WHERE userID=':1'", $userTied->userID);
+$desktopIcons = array();
+foreach($desktopFiles as $desktopFile)
+{
+    if ($desktopFile['POStop'] !== '')
+    {
+	$posString = ' data-postop="'.$desktopFile['POStop'].'" data-posleft="'.$desktopFile['POSleft'].'"';
+    } else {
+	$posString = '';
+    }
+    $desktopIcons[] = array('filecode' => generateWindowCode($desktopFile['filename']), 'filename' => $desktopFile['filename'], 'posString' => $posString);
+}
+unset($desktopFiles);
+unset($desktopFile);
+//end desktop files
+
+//start server sse object bindings
+$push = new data_serverPush('travlrDesktopConnection');
+$push->serverURL = $siteRemoteRoot.'/ajax/desktopConnection.php';
+$push->bindFunction('updateLauncher');
+$push->bindFunction('showMessage');
+$push->bindFunction('redirect');
+$push->bindFunction('windowTask');
+//end server sse
+?>

@@ -1,0 +1,313 @@
+<?php
+require_once('html/attributes.inc.php');
+require_once('data/tied.inc.php');
+require_once('data/postback.inc.php');
+require_once('html/element.inc.php');
+require_once('html/textarea.inc.php');
+class html_form extends html_attributes
+{
+	function __construct($formname = 'form1', $action = '', $method = 'POST')
+	{
+		$this->form = new html_element('form', '');
+		$this->form->addattribute('action', $action);
+		if (!in_array($method, array('POST', 'GET'))){ $method = 'POST'; }
+		$this->form->addattribute('method', $method);
+		$this->formdata['name'] = $formname;
+		$this->formdata['id'] = rand()+rand();
+		$this->formdata['action'] = $action;
+		$this->formdata['method'] = $method;
+		$this->refillvalues = TRUE;
+		$this->postback = new data_postback($this->formdata['name']);
+		$this->ispostback = $this->postback->ispostback;
+	}
+	
+	public function addinput($name, $type = 'text', $value = '', $group = '', $checked = FALSE)
+	{
+		$inputdata['name'] = substr(md5(rand()+rand()), 0, 15);
+		$inputtypes = array('text', 'password', 'select', 'checkbox', 'radio', 'hidden','textarea', 'submit');
+		if (!in_array($type, $inputtypes)) { $type = 'text'; }
+		$inputdata['type'] = $type;
+		$inputdata['classes'] = array();
+		//for radio buttons to have the same group
+		if (isset($this->inputdata))
+		{
+			foreach($this->inputdata as $forinputdata)
+			{
+				if (isset($forinputdata['groupname']) && $forinputdata['groupname'] == $group)
+				{
+					$inputdata['group'] = $forinputdata['group'];
+				}
+			}
+		}
+		if (!isset($inputdata['group'])){ $inputdata['group'] = substr(md5(rand()+rand()), 0, 15); }
+		//for textarea
+		if ($type == 'textarea')
+		{
+			$inputdata['textarea'] = new html_textarea($inputdata['name']);
+			$inputdata['textarea']->setvalue($value);
+		}
+		//end textarea
+		$inputdata['selectoptions'] = array();
+		$inputdata['groupname'] = $group;
+		$inputdata['attributes'] = array('value' => $value);
+		if ($checked){ $inputdata['attributes']['checked'] = 'checked'; }
+		$this->inputdata[$name] = $inputdata;
+	}
+	
+	public function ishtml($input, $ishtml = TRUE, $theme = 'advanced', $skinvariant = 'silver', $isresize = TRUE)
+	{
+		$this->inputdata[$input]['textarea']->ishtml($ishtml, $theme, $skinvariant, $isresize);
+	}
+	
+	public function refillvalues($refill)
+	{
+		if ($refill)
+		{
+			$this->refillvalues = TRUE;
+		} else {
+			$this->refillvalues = FALSE;
+		}
+	}
+	
+	public function addselectoption($select, $content, $value = '')
+	{
+		$htmlvalue = substr(md5(rand()+rand()), 0, 15);
+		$this->inputdata[$select]['selectoptions'][] = array('htmlvalue' => $htmlvalue,'value' => $value, 'content' => $content);
+	}
+	
+	public function addinputclass($input, $class)
+	{
+		if(isset($this->inputdata[$input]))
+		{
+			$this->inputdata[$input]['classes'][] = $class;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+	
+	public function removeinputclass($input, $class)
+	{
+		if(isset($this->inputdata[$input]))
+		{
+			foreach($this->inputdata[$input]['classes'] as $testclassnum => $testclass)
+			{
+				if ($testclass == $class)
+				{
+					$tounset = $testclassnum;
+				}
+			}
+			if (isset($tounset))
+			{
+				unset($this->inputdata[$input]['classes'][$testclassnum]);
+				return TRUE;
+			} else {
+				return FALSE;
+			}
+		} else {
+			return FALSE;
+		}
+	}
+	
+	
+	public function addinputattribute($input, $attribute, $value)
+	{
+		if(isset($this->inputdata[$input]))
+		{
+			$this->inputdata[$input]['attributes'][$attribute] = $value;
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+	
+	public function removeinputattribute($input, $attribute)
+	{
+		if(isset($this->inputdata[$input]))
+		{
+			if(isset($this->inputdata[$input]['attributes'][$attribute]))
+			{
+				unset($this->inputdata[$input]['attributes'][$attribute]);
+                                return TRUE;
+			} else {
+				return FALSE;
+			}
+		} else {
+			return FALSE;
+		}
+	}
+	
+	public function setinputvalue($input, $value)
+	{
+		if ($this->inputdata[$input]['type'] == 'textarea')
+		{
+			$this->inputdata[$input]['textarea']->setvalue($value);
+		} else {
+			$this->addinputattribute($input, 'value', $value);
+		}
+	}
+	
+	protected function generateinput($inputdata)
+	{
+		if ($inputdata['type'] == 'text' || $inputdata['type'] == 'password' || $inputdata['type'] == 'hidden' || $inputdata['type'] == 'submit')
+		{
+			$this->attributes = $inputdata['attributes'];
+			$this->classes = $inputdata['classes'];
+			$attributes = parent::getattributesource();
+			unset($this->attributes);
+			unset($this->classes);
+			$html = '<input type="'.$inputdata['type'].'"'.$attributes.' name="'.$inputdata['name'].'" />';
+			return $html;
+		}
+		
+		if ($inputdata['type'] == 'checkbox')
+		{
+			$this->attributes = $inputdata['attributes'];
+			$this->classes = $inputdata['classes'];
+			$attributes = parent::getattributesource();
+			unset($this->attributes);
+			unset($this->classes);
+			$html = '<input type="checkbox"'.$attributes.' name="'.$inputdata['name'].'" />';
+			return $html;
+		}
+		if ($inputdata['type'] == 'radio')
+		{
+			$this->attributes = $inputdata['attributes'];
+			$this->classes = $inputdata['classes'];
+			$attributes = parent::getattributesource();
+			unset($this->attributes);
+			unset($this->classes);
+			$html = '<input type="radio"'.$attributes.' name="'.$inputdata['group'].'" />';
+			return $html;
+		}
+
+		if ($inputdata['type'] == 'select')
+		{
+			$this->attributes = $inputdata['attributes'];
+			unset($this->attributes['value']); 
+			$this->classes = $inputdata['classes'];
+			$attributes = parent::getattributesource();
+			unset($this->attributes);
+			unset($this->classes);
+			$html  = '<select'.$attributes.' name="'.$inputdata['name'].'">'.PHP_EOL;
+			foreach ($inputdata['selectoptions'] as $optiondata)
+			{
+				if (isset($optiondata['selected']))
+				{
+					$selected = ' selected';
+				} else {
+					$selected = '';
+				}
+				$html .= '<option'.$selected.' value="'.$optiondata['htmlvalue'].'">'.$optiondata['content'].'</option>'.PHP_EOL;
+			}
+			$html .= '</select>';
+			return $html;
+		}
+		if ($inputdata['type'] == 'textarea')
+		{
+			foreach($inputdata['classes'] as $tmpclass)
+			{
+				$inputdata['textarea']->textarea->addclass($tmpclass);
+			}
+			foreach($inputdata['attributes'] as $tmpattribute => $tmpvalue)
+			{
+				$inputdata['textarea']->textarea->addattribute($tmpattribute, $tmpvalue);
+			}
+			return $inputdata['textarea'];
+		}
+	}
+	
+	public function separator($str)
+	{
+		$this->seperator = $str;
+	}
+	
+	public function inputstring()
+	{
+		$inputs = '';
+		foreach ($this->inputdata as $inputdata)
+		{
+			$inputs .= $this->generateinput($inputdata).PHP_EOL;
+			if (isset($this->seperator))
+			{
+				$inputs .= $this->seperator;
+			}
+		}
+	return $inputs;
+	}
+	
+	protected function dopostbackoverwrite()
+	{
+		if ($this->postback->ispostback && $this->refillvalues){
+			$this->formdata = $this->postback->data['formdata'];
+			$this->inputdata = $this->postback->data['inputdata'];
+			$this->form = $this->postback->data['formobject'];
+		}
+		
+	}
+	
+	public function checked($name, $tocheck)
+	{
+		if($tocheck)
+		{
+			$this->inputdata[$name]['attributes']['checked'] = 'checked';
+		} else {
+			unset($this->inputdata[$name]['attributes']['checked']);
+		}
+	}
+	
+	public function input($name)
+	{
+		if (!isset($this->hastoped)){ $top = $this->top(); } else { $top = ''; }
+		return $top.$this->generateinput($this->inputdata[$name]).PHP_EOL;
+	}
+	
+	public function inputexists($name)
+	{
+		if (isset($this->inputdata[$name]))
+		{
+			return TRUE;
+		} else {
+			return FALSE;
+		}
+	}
+	
+	public function top()
+	{
+		$this->hastoped = TRUE;
+		$this->dopostbackoverwrite();
+		$inputstring  = '<input type="hidden" name="formname" value="'.$this->formdata['name'].'" />'.PHP_EOL;
+		$inputstring .= '<input type="hidden" name="formid" value="'.$this->formdata['id'].'" />'.PHP_EOL;
+		$tosave['formdata'] 	= $this->formdata;
+		$tosave['inputdata'] 	= $this->inputdata;
+		$tosave['formobject'] 	= $this->form;
+		$datasavename			= 'htmlformdata:'.$this->formdata['name'].';formid:'.$this->formdata['id'];
+                $formdatasave = new data_tied(false, $datasavename);
+		$formdatasave->data = $tosave;
+		return $this->form->htmlfirsttag().PHP_EOL.$inputstring;
+	}
+	
+	public function content()
+	{
+		if (!isset($this->hastoped)){ $top = $this->top(); } else { $top = ''; }
+		$inputstring = $this->inputstring();
+		$this->form->setcontent($inputstring);
+		return $top.$this->form->getcontent();
+	}
+	
+	public function bottom()
+	{
+		return $this->form->htmlendtag();
+	}
+	
+	public function __tostring()
+	{
+		$formhtml  = $this->top();
+		$formhtml .= $this->content();
+		$formhtml .= $this->bottom();
+		return $formhtml;
+	}
+
+	
+}
+?>

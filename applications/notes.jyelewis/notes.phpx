@@ -1,0 +1,104 @@
+<?php
+require('../../SysData/init.php');
+$app = new travlr_application('notes.jyelewis');
+$window = $app->getWindow('main');
+$notesdb = new db_sqlite('database.db');
+
+if (isset($_GET['newNote']))
+{
+	$notesdb -> writeQuery("
+		INSERT INTO
+			notes
+			(`notebookID`, `editTime`)
+		VALUES
+			(':1', ':2')
+	", $window->data['notebookID'], time());
+	header('location: ?');
+}
+
+if (isset($_GET['deleteNote']))
+{
+	header('location: ?');
+	$window -> setData(array('notebookID' => $window->data['notebookID']));
+	$app -> newWindow('deleteNote', 'Delete note', '/deleteNote.php', $_GET['deleteNote']);
+}
+
+if (isset($_GET['noteID']))
+{
+	header('location: ?');
+	$window -> setData(array('notebookID' => $window->data['notebookID'], 'noteID' => $_GET['noteID']));
+}
+
+$notebook = $notesdb->query("
+	SELECT
+		title, locked
+	FROM
+		notebooks
+	WHERE
+		notebookID = ':1' AND
+		userID = ':2'
+", $window->data['notebookID'], $userTied->userID);
+$notebook = $notebook[0];
+
+$window -> setTitle($notebook['title'].' - Notes');
+
+if ($notebook['locked'] == '1'){  header('location: notebooks.php'); die('notebook locked'); }
+
+$notes = $notesdb->query("
+	SELECT
+		*
+	FROM
+		notes
+	WHERE
+		notebookID = ':1'
+	ORDER BY
+		editTime DESC
+", $window->data['notebookID']);
+
+$notesUL = new html_ul();
+$notesUL -> stripe();
+$notesUL -> li -> addclass('stripe1 clickable');
+$notesUL -> stripeli -> addclass('stripe2 clickable');
+
+foreach($notes as $note){
+	$notesUL->addli(generateNotePreview($note['content'], $note['editTime']), array('note'), array('data-note' => $note['noteID']));
+}
+
+function generateNotePreview($text, $time)
+{
+	$strLength = 25;
+	$text = explode(PHP_EOL, $text);
+	if (count($text) >= 1)
+	{
+		$retVal[0] = trim(substr($text[0], 0, $strLength));
+		if (strlen($text[0]) >= $strLength){ $retVal[0] .= '...'; }
+	}
+	if (count($text) >= 2 && strlen($text[1]) > 1)
+	{
+		$retVal[1] = trim(substr($text[1], 0, $strLength));
+		if (strlen($text[1]) >= $strLength){ $retVal[1] .= '...'; }
+	}
+	$retVal[] = date("g:i j/n", $time);
+	return implode('<br>', $retVal);
+}
+
+if (isset($window->data['noteID']))
+{
+	$note = $notesdb -> query("SELECT content FROM notes WHERE noteID = ':1' AND notebookID=':2'", $window->data['noteID'], $window->data['notebookID']);
+	$noteForm  = new html_form('noteform');
+	$noteForm -> addinput('textarea', 'textarea', $note[0]['content']);
+	$noteForm -> addinput('submit', 'submit', 'Save changes');
+	if($noteForm -> ispostback){
+		$note = $notesdb -> writeQuery("
+		UPDATE
+			notes
+		SET
+			content = ':3'
+		WHERE
+			noteID = ':1' AND
+			notebookID=':2'
+		", $window->data['noteID'], $window->data['notebookID'], $noteForm->postback->getvalue('textarea'));
+		header('location: ?');
+	}
+}
+?>

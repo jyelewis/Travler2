@@ -1,0 +1,182 @@
+<?php
+$app = new travlr_application('settings.system');
+$window = $app->getWindow('panel-Permissions-'.$_GET['windowCode']);
+if (isset($window->data['userID']) && hasPermission('alterPermissions'))
+{
+	$window->data['type'] = 'user';
+} else {
+	echo 'error!';
+	$window->close();
+	die();
+}
+$currUserData = $db->query("SELECT username, groupID FROM users WHERE userID = ':1'", $window->data['userID']);
+$currUserData = $currUserData[0];
+
+//start ajax update section
+if (isset($_POST['update']))
+{
+	$updateKey = $_POST['update'];
+	$permission = $_POST['permission'];
+	switch ($updateKey)
+	{
+		case 'userTrue':
+			$db->writeQuery("DELETE FROM Permissions WHERE userID = ':1' AND title = ':2'", $window->data['userID'], $permission);
+			$db->writeQuery("
+				INSERT INTO
+					Permissions
+					(`userID`, `title`, `value`)
+				VALUES
+					(':1', ':2', '1')
+			", $window->data['userID'], $permission);
+		break;
+		
+		case 'userFalse':
+			$db->writeQuery("DELETE FROM Permissions WHERE userID = ':1' AND title = ':2'", $window->data['userID'], $permission);
+			$db->writeQuery("
+				INSERT INTO
+					Permissions
+					(`userID`, `title`, `value`)
+				VALUES
+					(':1', ':2', '0')
+			", $window->data['userID'], $permission);
+		break;
+		
+		case 'groupTrue':
+			$db->writeQuery("DELETE FROM Permissions WHERE groupID = ':1' AND title = ':2'", $currUserData['groupID'], $permission);
+			$db->writeQuery("
+				INSERT INTO
+					Permissions
+					(`groupID`, `title`, `value`)
+				VALUES
+					(':1', ':2', '1')
+			", $currUserData['groupID'], $permission);
+		break;
+		
+		case 'groupFalse':
+			$db->writeQuery("DELETE FROM Permissions WHERE groupID = ':1' AND title = ':2'", $currUserData['groupID'], $permission);
+			$db->writeQuery("
+				INSERT INTO
+					Permissions
+					(`groupID`, `title`, `value`)
+				VALUES
+					(':1', ':2', '0')
+			", $currUserData['groupID'], $permission);
+		break;
+		
+		case 'userClear':
+			$db->writeQuery("DELETE FROM Permissions WHERE userID = ':1' AND title = ':2'", $window->data['userID'], $permission);
+		break;
+		
+		case 'groupClear':
+			$db->writeQuery("DELETE FROM Permissions WHERE groupID = ':1' AND title = ':2'", $currUserData['groupID'], $permission);
+		break;
+	}
+	die();
+}
+//send ajax update section
+
+$window->setTitle('Edit '.$currUserData['username'].'\'s permissions');
+$avaliblePermissions = $db->query("
+SELECT
+	 permission.allowedPermissionID
+	,permission.title
+	,parent.title as parentTitle
+	,parent.allowedPermissionID as parentID
+FROM
+	allowedPermissions as permission
+	LEFT OUTER JOIN allowedPermissions as parent
+		ON permission.parent = parent.allowedPermissionID
+");
+
+
+$permissionsUL = new html_ul();
+$permissionsUL -> li -> addclass('stripe1 groupli');
+
+foreach($avaliblePermissions as $permission)
+{
+	if($permission['parentID'] === NULL)
+	{
+		$perGroups[] = $permission;
+	} else {
+		$perItems[$permission['parentID']][] = $permission;
+	}
+}
+sort($perGroups);
+$result = $db->query("
+	SELECT
+		title,value
+	FROM
+		permissions
+	WHERE
+		userID = ':1'
+	", $window->data['userID']);
+$currentPermissions = array();
+foreach($result as $currentPermission)
+{
+	if ($currentPermission['value'])
+	{
+		$currentPermissions[$currentPermission['title']] = true;
+	} else {
+		$currentPermissions[$currentPermission['title']] = false;
+	}
+}
+$result = $db->query("
+	SELECT
+		title,value
+	FROM
+		permissions
+		INNER JOIN
+			Users as user
+			on user.groupID = permissions.groupID
+	WHERE
+		user.userID = ':1'
+	", $window->data['userID']);
+$groupPermissions = array();
+foreach($result as $groupPermission)
+{
+	if ($groupPermission['value'])
+	{
+		$groupPermissions[$groupPermission['title']] = true;
+	} else {
+		$groupPermissions[$groupPermission['title']] = false;
+	}
+}
+foreach($perGroups as $catagory)
+{
+	$code = '<div class="title">'.$catagory['title'].' ('.count($perItems[$catagory['allowedPermissionID']]).')</div><div class="permissionsCollapse">';
+
+	$currUL = new html_ul();
+	$currUL -> li -> addclass('stripe1 clickable');
+	foreach($perItems[$catagory['allowedPermissionID']] as $permission)
+	{
+		if (isset($currentPermissions[$permission['title']]))
+		{
+			if ($currentPermissions[$permission['title']])
+			{
+				$classes = array('hasTrue');
+			} else {
+				$classes = array('hasFalse');
+			}
+		} else {
+			$classes = array();
+		}
+		$groupCode = '';
+		if (isset($groupPermissions[$permission['title']]))
+		{
+			if ($groupPermissions[$permission['title']])
+			{
+				$groupCode = '<div class="groupAllow">group: true</div>';
+			} else {
+				$groupCode = '<div class="groupAllow">group: false</div>';
+			}
+		}
+		$currUL -> addli(
+			$permission['title'].$groupCode,
+			$classes,
+			array('data-permission' => $permission['title'])
+		);
+	}
+	$code .= $currUL.'</div>';
+	$permissionsUL->addli($code);
+}
+?>

@@ -1,0 +1,93 @@
+<?php
+$access = 'login';
+require('SysData/init.php');
+if ($userTied -> loginStage === 'desktopInit')
+{
+    $stage = 'init';
+    $preloadImages = array();
+    foreach(scandir($siteLocalRoot.'/images') as $image)
+    {
+        if ($image != '.' && $image != '..' && basename(substr($image, 0, 1)) != '.' && !is_dir($siteLocalRoot.'/images/'.$image)){
+            $preloadImages[] = $siteRemoteRoot.'/images/'.$image;
+        }
+    }
+    foreach($db->query("SELECT backgroundImageID FROM BackgroundImages WHERE userID=':1'", $userTied->userID) as $imageID)
+    {
+        $preloadImages[] = $siteRemoteRoot.'/ajax/backgroundImage.php?backgroundImageID='.$imageID['backgroundImageID'];
+    }
+    
+} elseif($userTied->loginStage === 'desktop')
+{
+    header('location: desktop.php');
+    exit();
+} else {
+    $stage = 'login';
+    $loginForm  = new html_form('login');
+    $loginForm -> addinput('username', 'text', 'username');
+    $loginForm -> addinput('passwordDummy', 'text', 'password');
+    $loginForm -> addinput('password', 'password');
+    $loginForm -> addinputattribute('passwordDummy', 'id', 'passwordDummyInput');
+    $loginForm -> addinputattribute('password', 'id', 'passwordInput');
+    $loginForm -> addinputattribute('username', 'id', 'usernameInput');
+    $loginForm -> addinput('submit', 'submit', '');
+    $loginForm -> addinputclass('submit', 'submit');
+
+    if ($userTied->kicked === true)
+    {
+        $userTied->kicked = false;
+        $kickedMessage = $userTied->kickedMessage;
+        $loginForm -> setinputvalue('username', $userTied->lastUsername);
+        $result = $db->query("SELECT fullname FROM Users WHERE username = ':1'", $userTied->lastUsername);
+        $usernameAjaxText = $result[0]['fullname'] or print_r($userTied);
+        $loginForm -> addinputclass('username', 'notBlank');
+    }
+    
+    if ($loginForm->ispostback)
+    {
+        $userResult = $db->query("SELECT userID,groupID,password,fullname FROM Users WHERE username=':1' limit 1", $loginForm->postback->getvalue('username'));
+        if (isset($userResult[0])
+        && $userResult[0]['password'] == md5($loginForm->postback->getvalue('password'))
+        && !hasPermission('disableLogin', $userResult[0]['userID']))
+        {
+            //username/password is correct
+            $userTied -> isAuth = true;
+            $userTied -> userID = $userResult[0]['userID'];
+            $userTied -> groupID = $userResult[0]['groupID'];
+            $userTied -> loginStage = 'desktopInit';
+            updateUserTied();
+            header('location: login.php');
+        } else {
+            // user pass not correct
+            if (isset($userResult[0]))
+            {
+                $usernameAjaxText = $userResult[0]['fullname'];
+            }
+            $loginForm->postback->addinputclass('passwordDummy', 'wrongRed');
+        }
+
+        if ($loginForm->postback->getvalue('username') != 'username')
+        {
+            $loginForm->postback->addinputclass('username', 'notBlank');
+        } else {
+            $loginForm->postback->removeinputclass('username', 'notBlank');
+        }
+        //so password isnt sent back in plain text
+        $loginForm->postback->setvalue('password', '');
+    }
+}
+
+$runScripts = '';
+if ($stage == 'init')
+{
+    $runScripts .= 'var triggerAjax = 1;'.PHP_EOL;
+} else {
+    $runScripts .= 'var triggerAjax = 0;'.PHP_EOL;
+}
+
+if (isset($kickedMessage))
+{
+    $runScripts .= "var kickedMessage = '".addslashes(str_replace(PHP_EOL, '', $userTied->kickedMessage))."';".PHP_EOL;
+} else {
+    $runScripts .= 'var kickedMessage = 0;'.PHP_EOL;
+}
+?>

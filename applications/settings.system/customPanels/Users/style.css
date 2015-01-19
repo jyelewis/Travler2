@@ -1,0 +1,62 @@
+.tdTitle {
+    width:180px;
+}
+
+#passwordConfirm {
+    display:none;
+}
+
+#passwordConfirm.show {
+    display:table-row;
+}
+
+#submit {
+	display:none;
+}
+
+.red {
+	border:2px solid #f55;
+}
+
+#formErrors {
+	width:400px;
+	margin-top:10px;
+	border:3px solid #999;
+	border-radius: 8px;
+	padding:5px;
+}
+
+#formConfirm {
+	width:200px;
+	margin-top:10px;
+	border:3px solid #5a5;
+	border-radius: 8px;
+	padding:5px;
+	font-size:20px;
+	text-align:center;
+}
+
+#backLink {
+	color:#000;
+	text-decoration:none;
+	font-family:Arial-black;
+	font-size:17px;
+}
+
+.onlineState {
+	float:right;
+	width:10px;
+	height:10px;
+	border-radius: 10px;
+	margin-top:2px;
+	border:2px solid #888;
+	margin-left:3px;
+}
+
+.onlineState.online {
+	background-color:#5d5;
+}
+
+.onlineState.offline {
+	background-color:#d55;
+}

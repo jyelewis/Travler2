@@ -1,0 +1,52 @@
+.permissionsCollapse {
+	display:none;
+	font-weight:normal;
+}
+
+.permissionsCollapse > ul > li {
+	background-color:#bbb;
+}
+
+ul {
+	margin:5px;
+}
+
+.groupli {
+	padding: 4px 8px !important;
+}
+
+.hasTrue {
+	background-color:#bcb !important;
+}
+
+.hasTrue:hover {
+	background-color:#beb !important;
+	color:#000 !important;
+}
+
+.hasFalse {
+	background-color:#cbb !important;
+}
+
+.hasFalse:hover {
+	background-color:#ebb !important;
+	color:#000 !important;
+}
+
+.groupAllow {
+	font-weight:normal;
+	float:right;
+	font-size:11px;
+	margin-top:2px;
+}
+
+#buttons {
+	float:right;
+}
+
+#title {
+	font-size:18px;
+	font-weight:bold;
+	margin-left:10px;
+	float:left;
+}

@@ -1,0 +1,167 @@
+body {
+    margin:0;
+    padding:0;
+    font-size:14px;
+}
+
+#passwordInput {
+        display:none;
+    }
+    
+#passwordDummyInput {
+    color:#aaa;
+}
+
+#usernameInput {
+    color:#aaa;
+}
+
+#usernameInput.notBlank {
+    color:#000;
+}
+
+#loginWindow {
+    width:400px;
+    height:300px;
+    position:relative;
+    z-index:2;
+    background-image:url('../images/loginWindow.png');
+    background-repeat:no-repeat;
+    background-position: top center;
+    margin:30px auto 0 auto;
+}
+
+#usernameAjaxText {
+    position:absolute;
+    top:25px;
+    left:25px;
+    color:#fff;
+    font-size:18px;
+    font-family:Arial;
+    font-weight:bold;
+}
+
+#serverDownIcon {
+    position:absolute;
+    top:10px;
+    left:10px;
+    background-image:url('../Images/warning.png');
+    bacground-repeat:no-repeat;
+    width:100px;
+    height:87px;
+}
+
+#loginForm {
+    position:absolute;
+    top:100px;
+    left:25px;
+}
+
+#loginForm input {
+    font-size:16px;
+    width:340px;
+    padding: 0 5px;
+    height:30px;
+    margin-bottom:5px;
+    outline:none;
+    border:none;
+    border-radius: 8px;
+}
+
+#loginForm input.submit {
+    width:100px;
+    height:25px;
+    float:right;
+    margin-right:22px;
+    border:none;
+    background-color:transparent;
+    background-image:url('../images/loginButton.png');
+}
+
+#loginForm input.submit:hover {
+    background-position: 0 26px;
+}
+
+#loginForm input.wrongRed {
+    background-color:#fcc;
+    background-image:url('../images/formError.png');
+    background-repeat:no-repeat;
+    background-position:center right;
+}
+
+#DesktopInitText {
+   position:relative;
+   left:-50%;
+   width:140px;
+   color: #fff;
+   font-family:Arial;
+   font-weight:bold;
+   font-size:20px;
+   background-image:url('../images/ajax-loader1.gif');
+   background-repeat:no-repeat;
+   background-position:center right;
+}
+
+#serverDownMessage {
+	position:relative;
+	left:-50%;
+	top:20px;
+	width:180px;
+	color: #300;
+	font-family:Arial;
+	font-weight:bold;
+	font-size:23px;
+}
+
+#InitTextContainer {
+    position:relative;
+    top:100px;
+    left:50%;
+    width:140px;
+}
+
+/* background positioning */
+#backgroundContainer {
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+    overflow:hidden;
+    z-index:1;
+}
+
+#backgroundContainer img {
+    position:absolute;
+    top:0;
+    left:0;
+    min-height: 741px;
+    min-width: 1500px;
+    width: 100% !important;
+    height: auto !important;
+}
+
+#preload {
+    position:absolute;
+    bottom:0;
+    right:0;
+    width:0;
+    height:0;
+    overflow:hidden;
+}
+
+#messageContainer, #messageTrigger {
+	display:none;
+}
+
+#messageContainer {
+	font-size:15px;
+	font-family:Arial;
+	line-height:18px;
+    font-weight:bold;
+    text-align:center;
+    padding-top:15px;
+    padding-bottom:5px;
+}

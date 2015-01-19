@@ -1,0 +1,266 @@
+<?php
+$app = new travlr_application('settings.system');
+$window = $app->getWindow('panel-Users');
+
+$displayUserEdit = false;
+$displayUserList = false;
+$displayFormErrors = false;
+$displayConfirm = false;
+
+if(hasPermission('alterUsers')){
+	$window -> setTitle('User Accounts');
+    if (isset($_GET['editUserID']))
+    {
+		displayUserEdit($_GET['editUserID'], true);
+    } else {
+		$displayUserList = true;
+		$usersFetch = $db->query("SELECT * FROM Users");
+	
+		$usersUL = new html_ul();
+		$usersUL -> stripe();
+		$usersUL -> li -> addclass('stripe1 clickable');
+		$usersUL -> stripeli -> addclass('stripe2 clickable');
+	
+		foreach($usersFetch as $user){
+			$usersUL->addli($user['username'], array(), array('onclick' => "location.href='?editUserID={$user['userID']}'"));
+		}
+    }
+} else {
+	$window -> setTitle('User Account');
+    displayUserEdit($userTied->userID);
+}
+
+function displayUserEdit($userID, $isAdmin = false)
+{
+    global $displayUserEdit, $db, $userTied, $displayData;
+    $displayUserEdit = true;
+    $result = $db->query("SELECT * FROM Users WHERE userID=':1'", $userID);
+    $currUser = $result[0];
+    $displayData['username'] = $currUser['username'];
+    $displayData['isAdmin'] = $isAdmin;
+    $displayData['userData'] = $currUser;
+    if(userLoggedIn($currUser['userID']))
+    {
+    	$displayData['onlineStatus'] = 'Connected to server';
+    	$displayData['onlineClass'] = 'online';
+    } else {
+    	$displayData['onlineStatus'] = 'Disconnected from server';
+    	$displayData['onlineClass'] = 'offline';
+    }
+    
+    $displayData['userForm']  = new html_form('userForm');
+    
+    $displayData['userForm'] -> addinput('messageText', 'textarea');
+    $displayData['userForm'] -> addinput('messageLogout', 'checkbox');
+    $displayData['userForm'] -> addinput('messageSubmit', 'submit', 'Send message');
+    
+    $displayData['userForm'] -> addinput('username', 'text', $currUser['username']);
+    $displayData['userForm'] -> addinput('fullname', 'text', $currUser['fullname']);
+    $displayData['userForm'] -> addinput('password', 'password');
+    $displayData['userForm'] -> addinput('passwordConfirm', 'password');
+    $displayData['userForm'] -> addinput('drive', 'text', $currUser['drive']);
+    $displayData['userForm'] -> addinput('group', 'select');
+    
+    $displayData['userForm'] -> addinput('userID', 'hidden', $userID);
+    
+    $groupQuery = $db->query("SELECT * FROM Groups WHERE groupID=':1'", $currUser['groupID']);
+    $displayData['userForm'] -> addselectoption('group', $groupQuery[0]['title'], $groupQuery[0]['groupID']);
+    if($isAdmin){
+	foreach($db->query("SELECT * FROM Groups") as $group) //only fill out the select if we know its not going to be disabled
+	{
+	    if ($group['groupID'] != $currUser['groupID'])
+	    {
+		$displayData['userForm'] -> addselectoption('group', $group['title'], $group['groupID']);
+	    }
+	}
+    } else {
+	
+	$displayData['userForm']->addinputattribute('group', 'disabled', 'disabled');
+    }
+    
+    if(!$isAdmin && !hasPermission('alterSelf'))
+    {
+	$displayData['userForm'] ->addinputattribute('username', 'disabled', 'disabled');
+	$displayData['userForm'] ->addinputattribute('fullname', 'disabled', 'disabled');
+    }
+    $displayData['userForm'] -> addinput('editPermissions', 'submit', 'Edit permissions');
+    $displayData['userForm'] -> addinput('delete', 'submit', 'Delete Account');
+    $displayData['userForm'] -> addinput('submit', 'submit', 'Save Changes');
+}
+
+
+/* validation and saving changes into database */
+if (isset($displayData['userForm']) && $displayData['userForm']->ispostback
+	&& !$displayData['userForm'] -> postback -> inputisset('delete')
+	&& !$displayData['userForm'] -> postback -> inputisset('messageSubmit')
+	&& !$displayData['userForm'] -> postback -> inputisset('editPermissions')
+)
+	
+{
+    $formErrors = array();
+    $formReds = array();
+    
+    if (hasPermission('alterUsers')) {
+    	$formUserID = $displayData['userForm'] -> postback -> getvalue('userID');
+    } else {
+    	$formUserID = $userTied->userID;
+	}
+    $formUserData = $db->query("SELECT * FROM Users WHERE userID=':1'", $formUserID);
+    $formUserData = $formUserData[0];
+    
+    
+    /*password valitate*/
+    if ($displayData['userForm'] -> postback -> getvalue('password') != '')
+	{
+		if ($displayData['userForm'] -> postback -> getvalue('password') != $displayData['userForm'] -> postback -> getvalue('passwordConfirm'))
+		{
+			$formErrors[] = 'Passwords must match';
+			$formReds[] = 'password';
+			$formReds[] = 'passwordConfirm';
+			$showPassConfirm = true;
+		} else {
+			$newPassword = $db->db->real_escape_string(md5($displayData['userForm'] -> postback -> getvalue('password')));
+		}
+	}
+	$displayData['userForm'] -> postback -> setvalue('password', '');
+    /*finish password val*/
+    
+    if (hasPermission('alterUsers') || hasPermission('alterSelf'))
+    {
+		/*username val*/
+		if ($displayData['userForm'] -> postback -> getvalue('username') != $formUserData['username'])
+		{
+			if (count($db->query("SELECT userID FROM Users WHERE username=':1'", $displayData['userForm'] -> postback -> getvalue('username'))) > 0)
+			{
+				$formErrors[] = 'Username "'.$displayData['userForm'] -> postback -> getvalue('username').'" is already is use';
+				$formReds[] = 'username';
+			} elseif (strlen($displayData['userForm'] -> postback -> getvalue('username')) < 3) {
+				$formErrors[] = 'Username must be at least 3 characters';
+				$formReds[] = 'username';
+			} else {
+				$newUsername = $db->db->real_escape_string($displayData['userForm'] -> postback -> getvalue('username'));
+			}
+		}
+		/*finish username val*/
+		
+		/*fullname val*/
+		if ($displayData['userForm'] -> postback -> getvalue('fullname') != $formUserData['fullname'])
+		{
+			if ($displayData['userForm'] -> postback -> getvalue('fullname') == '')
+			{
+				$formErrors[] = 'Fullname can\'t be empty';
+				$formReds[] = 'fullname';
+			} else {
+				$newFullname = $db->db->real_escape_string($displayData['userForm'] -> postback -> getvalue('fullname'));
+			}
+		}
+		/*finish fullname val*/
+		
+		/*fullname val*/
+		if ($displayData['userForm'] -> postback -> getvalue('drive') != $formUserData['drive'])
+		{
+			if(hasPermission('alterUsers'))
+			{
+				$newDrive = $db->db->real_escape_string($displayData['userForm'] -> postback -> getvalue('drive'));
+			}
+		}
+		/*finish fullname val*/
+		
+		/* begin group val*/
+		if ($displayData['userForm'] -> postback -> getvalue('group') !== $formUserData['groupID'])
+		{
+			if (hasPermission('alterUsers')) {
+				$newGroup = $displayData['userForm'] -> postback -> getvalue('group');
+			}
+		}
+		/*finish group val*/
+    }
+    removeallreds();
+    
+    if (count($formErrors) == 0)
+    {
+    	if(isset($newPassword)){
+    		$insertSql[] = "password = '$newPassword'";
+		}
+		if(isset($newUsername)){
+			$insertSql[] = "username = '$newUsername'";
+		}
+		if(isset($newFullname)){
+			$insertSql[] = "fullname = '$newFullname'";
+		}
+		if(isset($newGroup)){
+			$insertSql[] = "groupID = '$newGroup'";
+		}
+		if(isset($newDrive)){
+			$insertSql[] = "drive = '$newDrive'";
+		}
+		if (isset($insertSql))
+		{
+			$insertSql = implode(', ', $insertSql);
+			$db->query("UPDATE Users SET $insertSql WHERE userID=':1'", $formUserData['userID']);
+			$displayConfirm = true;
+		}
+    } else {
+    	foreach($formReds as $red)
+    	{
+    		$displayData['userForm'] -> postback -> addinputclass($red, 'red');
+    	}
+    	$displayFormErrors = true;
+    	
+    	$ul = new html_ul();
+    	$ul -> stripe();
+		$ul -> li -> addclass('stripe1');
+		$ul -> stripeli -> addclass('stripe2');
+    	foreach ($formErrors as $error)
+    	{
+    		$ul -> addli($error);
+    	}
+    	$formErrors = $ul;
+    	unset($ul);
+    }
+}
+
+function removeallreds()
+{
+	global $displayData;
+	foreach($displayData['userForm']->postback->data['inputdata'] as $input => $val)
+	{
+		$displayData['userForm']->postback->removeinputclass($input, 'red');
+	}
+}
+
+if (isset($displayData['userForm']) && $displayData['userForm']->ispostback
+	&& hasPermission('alterUsers') && $displayData['userForm'] -> postback -> inputisset('messageSubmit'))
+{
+	$formUserID = $displayData['userForm'] -> postback -> getvalue('userID');
+	$message = $displayData['userForm'] -> postback -> getvalue('messageText');
+	$forceLogout = $displayData['userForm'] -> postback -> getvalue('messageLogout');
+	sendMessage($formUserID, $message, $forceLogout);
+	$displayData['userForm'] -> postback -> setvalue('messageText', '');
+	$displayData['userForm'] -> postback -> setvalue('messageLogout', '');
+	$displayData['userForm'] -> postback -> setvalue('messageSubmit', 'Message sent');
+}
+
+if (isset($displayData['userForm']) && $displayData['userForm']->ispostback
+	&& hasPermission('alterUsers') && $displayData['userForm'] -> postback -> inputisset('delete'))
+{
+	$app->newWindow('panel-Users-deleteConfirm', 'Confirm account delete', '/customPanels/Users/confirmDelete.php?userID='.$displayData['userForm'] -> postback -> getvalue('userID'));
+	header('location: ?');
+}
+
+if (isset($displayData['userForm']) && $displayData['userForm']->ispostback
+        && hasPermission('alterPermissions') && $displayData['userForm'] -> postback -> inputisset('editPermissions'))
+{
+		$windowCode = md5('d31l3f23'.$displayData['userForm'] -> postback -> getvalue('userID').'fd');
+        $app->newWindow(
+		 'panel-Permissions-'.$windowCode
+		,'Edit permissions'
+		,'/customPanels/UserPermissions/panel.php?windowCode='.$windowCode
+		,array('userID' => $displayData['userForm'] -> postback -> getvalue('userID'))
+	);
+}
+
+
+//trigger error
+//foreach('asdf' as $arrayBreak){}
+?>

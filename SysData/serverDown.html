@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Travlr - login</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="initial-scale=1.0; maximum-scale=1.0;">
+		<?php
+			javascriptInclude('/js/login.js');
+			cssInclude('/css/login.css');
+		?>
+    </head>
+    <body>
+        <div id="backgroundContainer">
+             <img src="<?php echo $siteRemoteRoot; ?>/images/background.gif" alt="" />
+        </div>
+        <div id="loginWindow">
+
+            <div id="serverDownIcon"></div>
+            <div id="InitTextContainer">
+                <div id="serverDownMessage">Server Down</div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,14 @@
+<?php	
+$access = 'server';
+require('../SysData/init.php');
+require('functions.php');
+stopServer();
+$serverDb->writeQuery("DELETE FROM pendingLog");
+sleep(2);
+
+if (isset($_GET['power']))
+{
+	if ($_GET['power'] == 'up'){ startServer(); }
+	if ($_GET['power'] == 'down'){ stopServer(); }
+}
+?>

@@ -1,0 +1,69 @@
+#newNotebookForm {
+	text-align:center;
+	margin-top:25px;
+}
+
+#newNotebookForm input.text {
+	width:300px;
+}
+
+li.create {
+	padding: 10px;
+	margin-bottom:15px;
+}
+
+li.locked {
+	background-image: url('lock.png');
+	background-repeat: no-repeat;
+	background-position:right center;
+}
+
+.incorrect {
+	background-color:#fcc;
+}
+
+#notes ul {
+	margin-top:5px;
+}
+
+#notes {
+	float:left;
+	width: 250px;
+}
+
+#notes li {
+	font-weight:normal;
+	font-size:12px;
+}
+
+#notes a, .submit {
+	width:240px;
+	margin-bottom:3px;
+}
+
+#notes .submit {
+	width:250px;
+	padding-top:15px;
+	padding-bottom:15px;
+}
+
+#noteEdit {
+	float:left;
+	margin-left:10px;
+	position:fixed;
+	top:9px;
+	bottom:15px;
+	right:15px;
+	left:260px;
+}
+
+#noteEdit form {
+	height:100%;
+}
+
+#noteEdit textarea {
+	width:100%;
+	height:100%;
+	resize:none;
+	background-color:#bbb;
+}

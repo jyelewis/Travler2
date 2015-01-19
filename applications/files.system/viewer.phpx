@@ -1,0 +1,33 @@
+<?php
+$app = new travlr_application('files.system');
+$window = $app->getWindow('viewer');
+
+$fs = new travlr_filesystem($siteLocalRoot.'/SysData/filesystem.db');
+
+$curDir = '/';
+$filesLs = $fs->ls($curDir);
+
+if(isset($_GET['open']))
+{
+	$file = $_GET['open'];
+	$app->newWindow('file-'.$file, $file, '/../../file/'.$file);
+	 //($fs->getID3($file));
+}
+
+//echo travlr_filesystem::createTempFile('asdfasdfasdf');
+
+$files = array();
+foreach($filesLs as $file)
+{
+	if($file['type'] == 'dir')
+	{
+		$file['icon'] = $siteRemoteRoot.'/server/fileIcons/Folder-blue.png';
+	} else {
+		$file['icon'] = $siteRemoteRoot.'/applications/'.$app->appInfo['idCode'].'/fileIcon.php?file='.urlencode($file['path']);
+	}
+	$files[] = $file;
+}
+unset($filesLs);
+unset($file);
+
+?>

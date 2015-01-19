@@ -1,0 +1,48 @@
+#aboutText {
+	text-align:center;
+	padding-top:30px;
+}
+
+#aboutText h1 {
+	font-size:30px;
+}
+
+.timerInfo {
+	width:250px;
+	margin:0 auto;
+	margin-top:5px;
+	background-color:rgba(0,0,0,0.03);
+	border-radius:4px;
+	padding:3px 0;
+	text-align:center;
+}
+
+.timerInfo h1 {
+	margin:0 !important;
+}
+
+.timerType {
+	font: bold 12px "Helvetica Neue", Helvetica;
+}
+
+.timerType.green {
+	color:#080;
+}
+
+.timerType.red {
+	color:#800;
+}
+
+.timerCounter {
+	font: bold 34px "Helvetica Neue", Helvetica;
+	color:#444;
+}
+
+.currentTimer {
+	display:none;
+	height:85px;
+}
+
+.mainTimer.flash.flashState {
+	color:#f55;
+}

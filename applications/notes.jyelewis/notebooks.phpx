@@ -1,0 +1,78 @@
+<?php
+require('../../SysData/init.php');
+$app = new travlr_application('notes.jyelewis');
+$window = $app->getWindow('main');
+$window -> setTitle('Notebooks');
+$notesdb = new db_sqlite('database.db');
+
+
+if (isset($_GET['newNotebook']))
+{
+	header('location: ?');
+	$app -> newWindow('newNotebook', 'Create new notebook', '/newNotebook.php');
+}
+
+if (isset($_GET['deleteNotebook']))
+{
+	header('location: ?');
+	$app -> newWindow('deleteNotebook', 'Delete notebook', '/deleteNotebook.php', $_GET['deleteNotebook']);
+}
+
+if (isset($_GET['lockNotebook']))
+{
+	header('location: ?');
+	$notesdb -> writeQuery("UPDATE notebooks SET locked='1' WHERE notebookID=':1' AND userID=':2'", $_GET['lockNotebook'], $userTied->userID);
+}
+
+if (isset($_GET['unlockNotebook']))
+{
+	header('location: ?');
+	$locked = $notesdb->query("SELECT locked FROM notebooks WHERE notebookID = ':1'", $_GET['unlockNotebook']);
+	if ($locked[0]['locked'] == '1')
+	{
+		$app -> newWindow('unlockNotebook', 'Unlock notebook', '/unlockNotebook.php', $_GET['unlockNotebook']);
+	}
+}
+
+if (isset($_GET['notebookID']))
+{
+	$notebook = $notesdb->query("
+	SELECT
+		title, locked
+	FROM
+		notebooks
+	WHERE
+		notebookID = ':1' AND
+		userID = ':2'
+", $_GET['notebookID'], $userTied->userID);
+	if ($notebook[0]['locked'] != '1'){
+		$window->setData(array('notebookID' => $_GET['notebookID']));
+		header('location: notes.php');
+	}
+}
+
+$notebooks = $notesdb->query("
+	SELECT
+		 notebookID
+		,title
+		,locked
+	FROM
+		notebooks
+	WHERE
+		userID = ':1'
+	ORDER BY
+		title
+", $userTied->userID);
+
+$notebooksUL = new html_ul();
+$notebooksUL -> stripe();
+$notebooksUL -> li -> addclass('stripe1 clickable');
+$notebooksUL -> stripeli -> addclass('stripe2 clickable');
+$notebooksUL->addli('Create new notebook', array('create'), array('onclick' => "location.href='?newNotebook=1'"));
+
+foreach($notebooks as $notebook){
+	$lockedState = ($notebook['locked'])? array('locked', 'notebook') : array('notebook'); 
+	$notebooksUL->addli($notebook['title'], $lockedState, array('data-notebook' => $notebook['notebookID']));
+}
+
+?>
